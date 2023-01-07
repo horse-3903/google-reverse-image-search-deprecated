@@ -15,7 +15,7 @@ def _startup_() -> list:
     `[playwright.sync_api.Page, playwright.sync_api.Browser, playwright.sync_api.BrowserContext]`
     """
     p:Playwright = sync_playwright().start()
-    browser = p.chromium.launch(headless=False) # change to False for debugging
+    browser = p.chromium.launch() # change to False for debugging
     context = browser.new_context()
     page = context.new_page()
     page.goto("https://www.google.com.my/imghp") # goes to image search
@@ -47,7 +47,7 @@ def search_with_url(url:str, num:int = 5) -> None:
         page.get_by_role("button",name="Search",exact=True).first.click()
         page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
 
-        results = results_to_json(page=page, num=num)
+        results = results_to_json(page=page, lens=True, num=num)
         browser.close()
         context.close()
         return results
@@ -84,7 +84,7 @@ def search_with_file(file_path:str, num:int = 5) -> None:
     file_chooser.set_files(file_path)
     page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
     
-    results = results_to_json(page=page, num=num)
+    results = results_to_json(page=page, lens=True, num=num)
     browser.close()
     context.close()
     return results
@@ -109,7 +109,7 @@ def search_with_query(query:str, num:int = 5):
     query_input.type(query)
     query_input.press("Enter")
     
-    results = results_to_json(page=page, num=num)
+    results = results_to_json(page=page, lens=False, num=num)
     browser.close()
     context.close()
     return results
@@ -165,8 +165,14 @@ def results_to_json(page:Page, lens:bool, num:int = 5) -> dict:
         except PlaywrightTimeout:
             pass
 
-    page.get_by_role("button", name="Tools").click()
-    page.get_by_role("listitem").first.click()
+    while True:
+        try:
+            page.wait_for_selector("'Tools'").hover()
+            page.wait_for_selector("'Tools'").click()
+            break
+        except:
+            pass
+    page.get_by_role("button",name="Size").first.click()
     size:list = ["Large","Medium","Any size"]
     size_idx = 0
     page.get_by_role("link", name=size[size_idx]).filter(has_text=size[size_idx]).click()
