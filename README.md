@@ -3,7 +3,7 @@
 ## Installation
 Download the `main` folder (or just `main/google_reverse_search.py`) into your local directory
 
-Run the command in your local terminal (ideally also through a virtual environment - follow this guide https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/)
+Run the command in your local terminal (ideally also through a virtual environment - follow this guide https://docs.python.org/3/library/venv.html#creating-virtual-environments)
 ```ps1
 # assuming your virtual env has been set up
 >> pip install -r requirements.txt
