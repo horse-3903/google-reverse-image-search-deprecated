@@ -22,7 +22,7 @@ from google_reverse_search import *
 Then start anywhere with the three basic functions
 
 ```py
-print(search_with_query(query="astronomy"))
+print(search_with_query(query="your query"))
 print(search_with_url(url="https://link/to/photo"),num=5)
 print(search_with_file(file_path="C:/path/to/file",num=20))
 ```
