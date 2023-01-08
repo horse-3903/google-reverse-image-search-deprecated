@@ -67,7 +67,7 @@ def search_with_url(url: str, num: int = 5, size: list[str] = ["Large","Medium",
         page.get_by_role("button", name="Search", exact=True).first.click()
         page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
 
-        results = results_to_json(page=page, lens=True, num=num, size=size)
+        results = __results_to_json(page=page, lens=True, num=num, size=size)
         browser.close()
         context.close()
         return results
@@ -117,7 +117,7 @@ def search_with_file(file_path: str, num: int = 5, size: list[str] = ["Large","M
     file_chooser.set_files(file_path)
     page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
     
-    results = results_to_json(page=page, lens=True, num=num, size=size)
+    results = __results_to_json(page=page, lens=True, num=num, size=size)
     browser.close()
     context.close()
     return results
@@ -152,12 +152,12 @@ def search_with_query(query:str, num:int = 5, size:list[str] = ["Large","Medium"
     query_input.type(query)
     query_input.press("Enter")
     
-    results = results_to_json(page=page, lens=False, num=num, size=size)
+    results = __results_to_json(page=page, lens=False, num=num, size=size)
     browser.close()
     context.close()
     return results
 
-def results_to_json(page:Page, lens:bool, size:list[str], num:int = 5) -> dict:
+def __results_to_json(page:Page, lens:bool, size:list[str], num:int = 5) -> dict:
     """
     Extracts results from a search and converts them to JSON
 
