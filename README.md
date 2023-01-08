@@ -37,7 +37,7 @@ print(res)
 ```
 
 ### Results
-##### Formatted for better viewing
+_Formatted for better viewing_
 ```ps1
 Connected...
 Navigating...
