@@ -2,47 +2,61 @@ from playwright.sync_api import Page, Playwright, Browser, BrowserContext, sync_
 from os.path import isfile
 import validators
 
-def __startup(debug:bool = False) -> tuple[Page, Browser, BrowserContext]:
+def __startup(debug: bool = False) -> tuple[Page, Browser, BrowserContext]:
     """
-    Startup process to open browser and contexts
-    
-    Ensures that Closing process is smooth
+    Startup process to open browser and contexts. Ensures that Closing process is smooth.
 
-    Optional debug mode to use in interactive mode
-    
-    Goes to https://www.google.com.my/imghp in preparation for querying
+    Parameters
+    ----------
+    debug: `bool`
+        optional debug mode to use in interactive mode
 
     Returns
-    ---------
-    `tuple[playwright.sync_api.Page, playwright.sync_api.Browser, playwright.sync_api.BrowserContext]`
+    -------
+    `tuple[Page, Browser, BrowserContext]`
+        tuple containing the `Page`, `Browser`, and `BrowserContext` objects
+
+    Raises
+    ------
+    `TimeoutError`
+        if the startup process times out
     """
-    p:Playwright = sync_playwright().start()
-    browser = p.chromium.launch(headless=not debug) # change headless to False for debugging
+    p: Playwright = sync_playwright().start()
+    browser = p.chromium.launch(headless=not debug)  # change headless to False for debugging
     context = browser.new_context()
     page = context.new_page()
-    page.goto("https://www.google.com.my/imghp") # goes to image search
+    page.goto("https://www.google.com.my/imghp")  # goes to image search
     print("Connected...")
     return (page, browser, context)
 
-def search_with_url(url:str, num:int = 5, size:list[str] = ["Large","Medium","Any size"], debug:bool = False) -> dict:
+def search_with_url(url: str, num: int = 5, size: list[str] = ["Large","Medium","Any size"], debug: bool = False) -> dict:
     """
-    Searches using URL on the web
-    
-    Will raise `validators.utils.ValidationFailure` upon invalidity
-    
-    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+    Searches using URL on the web. Calls the function `results_to_json`.
 
-    Optional debug mode to use in interactive mode
-    
-    Calls the function `results_to_json`
+    Parameters
+    ----------
+    url: `str`
+        URL to search for
+    num: `int`
+        optional number of results to return
+    size: `list[str]`
+        optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+    debug: `bool`
+        optional debug mode to use in interactive mode
 
     Returns
-    ---------
-    `None`
+    -------
+    `dict`
+        dictionary of search results
+
+    Raises
+    ------
+    `ValidationFailure`
+        if the provided `url` is invalid
     """
-    page:Page
-    browser:Browser
-    context:BrowserContext
+    page: Page
+    browser: Browser
+    context: BrowserContext
     page, browser, context = __startup(debug=debug)
     valid = validators.url(url)
     if valid:
@@ -50,7 +64,7 @@ def search_with_url(url:str, num:int = 5, size:list[str] = ["Large","Medium","An
         url_input = page.get_by_placeholder("Paste image link")
         url_input.hover()
         url_input.type(url)
-        page.get_by_role("button",name="Search",exact=True).first.click()
+        page.get_by_role("button", name="Search", exact=True).first.click()
         page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
 
         results = results_to_json(page=page, lens=True, num=num, size=size)
@@ -62,21 +76,30 @@ def search_with_url(url:str, num:int = 5, size:list[str] = ["Large","Medium","An
         context.close()
         raise valid
 
-def search_with_file(file_path:str, num:int = 5, size:list[str] = ["Large","Medium","Any size"], debug:bool = False) -> dict:
+def search_with_file(file_path: str, num: int = 5, size: list[str] = ["Large","Medium","Any size"], debug: bool = False) -> dict:
     """
-    Searches using file on the web
-    
-    Will raise `FileNotFoundError` upon invalidity
+    Searches using file on the web. Calls the function `results_to_json`.
 
-    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
-
-    Optional debug mode to use in interactive mode
-    
-    Calls the function `results_to_json`
+    Parameters
+    ----------
+    file_path: `str`
+        path to the file to search for
+    num: `int`
+        optional number of results to return
+    size: `list[str]`
+        optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+    debug: `bool`
+        optional debug mode to use in interactive mode
 
     Returns
-    ---------
-    `None`
+    -------
+    `dict`
+        dictionary of search results
+
+    Raises
+    ------
+    FileNotFoundError
+        if the provided `file_path` is invalid
     """
     page:Page
     browser:Browser
@@ -101,17 +124,23 @@ def search_with_file(file_path:str, num:int = 5, size:list[str] = ["Large","Medi
 
 def search_with_query(query:str, num:int = 5, size:list[str] = ["Large","Medium","Any size"], debug:bool = False) -> dict:
     """
-    Searches using a query on the web
+    Searches using a query on the web. Calls the function `results_to_json`.
 
-    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
-
-    Optional debug mode to use in interactive mode
-    
-    Calls the function `results_to_json`
+    Parameters
+    ----------
+    query: `str`
+        query to search for
+    num: `int`
+        optional number of results to return
+    size: `list[str]`
+        optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+    debug: `bool`
+        optional debug mode to use in interactive mode
 
     Returns
-    ---------
-    `None`
+    -------
+    `dict`
+        dictionary of search results
     """
     page:Page
     browser:Browser
@@ -130,26 +159,23 @@ def search_with_query(query:str, num:int = 5, size:list[str] = ["Large","Medium"
 
 def results_to_json(page:Page, lens:bool, size:list[str], num:int = 5) -> dict:
     """
-    Referred from `search_with_query()`, `search_with_url()` and `search_with_file()`
-    
-    Takes lens in case of the last 2 functions above, redirecting to the image carousel
+    Extracts results from a search and converts them to JSON
 
-    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+    Parameters
+    ----------
+    page: `Page`
+        `Page` object to extract results from
+    lens: `bool`
+        optional flag to enable image lensing
+    num: `int`
+        optional number of results to return
+    size: `list[str]`
+        optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
 
     Returns
-    ---------
-    ```
-    {
-        "title" : str,
-        "data" : [
-            {
-                "link" : str,
-                "name" : str,
-                "dimensions" : [int, int]
-            }, ...
-        ]
-    }
-    ```
+    -------
+    `dict`
+        dictionary of search results
     """
     if lens:
         nav_url:str = page.url
