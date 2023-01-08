@@ -22,7 +22,7 @@ from google_reverse_search import *
 Then start anywhere with the three basic functions
 
 ```py
-print(search_with_query(query="astronomy"))
+print(search_with_query(query="your query"))
 print(search_with_url(url="https://link/to/photo"),num=5)
 print(search_with_file(file_path="C:/path/to/file",num=20))
 ```
@@ -37,11 +37,12 @@ print(res)
 ```
 
 ### Results
-#### Formatted for better viewing
+##### Formatted for better viewing
 ```ps1
 Connected...
+Navigating...
 Getting results...
-Preparing results...
+Formatting results...
 {'title': 'boats', 
     'data': [
         {'link': 'https://www.discoverboating.com/sites/default/files/small-boats_1.jpg', 'name': 'The Ultimate Guide to Small Boats | Discover Boating', 'dimensions': [1200, 795]}, 
