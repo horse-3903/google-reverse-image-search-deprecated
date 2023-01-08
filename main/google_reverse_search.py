@@ -2,31 +2,37 @@ from playwright.sync_api import Page, Playwright, Browser, BrowserContext, sync_
 from os.path import isfile
 import validators
 
-def _startup_() -> list:
+def __startup(debug:bool = False) -> tuple[Page, Browser, BrowserContext]:
     """
     Startup process to open browser and contexts
     
     Ensures that Closing process is smooth
+
+    Optional debug mode to use in interactive mode
     
     Goes to https://www.google.com.my/imghp in preparation for querying
 
     Returns
     ---------
-    `[playwright.sync_api.Page, playwright.sync_api.Browser, playwright.sync_api.BrowserContext]`
+    `tuple[playwright.sync_api.Page, playwright.sync_api.Browser, playwright.sync_api.BrowserContext]`
     """
     p:Playwright = sync_playwright().start()
-    browser = p.chromium.launch() # change to False for debugging
+    browser = p.chromium.launch(headless=not debug) # change headless to False for debugging
     context = browser.new_context()
     page = context.new_page()
     page.goto("https://www.google.com.my/imghp") # goes to image search
     print("Connected...")
-    return [page, browser, context]
+    return (page, browser, context)
 
-def search_with_url(url:str, num:int = 5) -> None:
+def search_with_url(url:str, num:int = 5, size:list[str] = ["Large","Medium","Any size"], debug:bool = False) -> dict:
     """
     Searches using URL on the web
     
     Will raise `validators.utils.ValidationFailure` upon invalidity
+    
+    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+
+    Optional debug mode to use in interactive mode
     
     Calls the function `results_to_json`
 
@@ -37,7 +43,7 @@ def search_with_url(url:str, num:int = 5) -> None:
     page:Page
     browser:Browser
     context:BrowserContext
-    page, browser, context = _startup_()
+    page, browser, context = __startup(debug=debug)
     valid = validators.url(url)
     if valid:
         page.get_by_role("button", name="Search by image").click()
@@ -47,7 +53,7 @@ def search_with_url(url:str, num:int = 5) -> None:
         page.get_by_role("button",name="Search",exact=True).first.click()
         page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
 
-        results = results_to_json(page=page, lens=True, num=num)
+        results = results_to_json(page=page, lens=True, num=num, size=size)
         browser.close()
         context.close()
         return results
@@ -56,11 +62,15 @@ def search_with_url(url:str, num:int = 5) -> None:
         context.close()
         raise valid
 
-def search_with_file(file_path:str, num:int = 5) -> None:
+def search_with_file(file_path:str, num:int = 5, size:list[str] = ["Large","Medium","Any size"], debug:bool = False) -> dict:
     """
     Searches using file on the web
     
     Will raise `FileNotFoundError` upon invalidity
+
+    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+
+    Optional debug mode to use in interactive mode
     
     Calls the function `results_to_json`
 
@@ -71,7 +81,7 @@ def search_with_file(file_path:str, num:int = 5) -> None:
     page:Page
     browser:Browser
     context:BrowserContext
-    page, browser, context = _startup_()
+    page, browser, context = __startup()
 
     if not isfile(file_path):
         browser.close()
@@ -84,14 +94,18 @@ def search_with_file(file_path:str, num:int = 5) -> None:
     file_chooser.set_files(file_path)
     page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
     
-    results = results_to_json(page=page, lens=True, num=num)
+    results = results_to_json(page=page, lens=True, num=num, size=size)
     browser.close()
     context.close()
     return results
 
-def search_with_query(query:str, num:int = 5):
+def search_with_query(query:str, num:int = 5, size:list[str] = ["Large","Medium","Any size"], debug:bool = False) -> dict:
     """
     Searches using a query on the web
+
+    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
+
+    Optional debug mode to use in interactive mode
     
     Calls the function `results_to_json`
 
@@ -102,23 +116,25 @@ def search_with_query(query:str, num:int = 5):
     page:Page
     browser:Browser
     context:BrowserContext
-    page, browser, context = _startup_()
+    page, browser, context = __startup(debug=debug)
 
     query_input = page.get_by_role("combobox",name="Search")
     query_input.hover()
     query_input.type(query)
     query_input.press("Enter")
     
-    results = results_to_json(page=page, lens=False, num=num)
+    results = results_to_json(page=page, lens=False, num=num, size=size)
     browser.close()
     context.close()
     return results
 
-def results_to_json(page:Page, lens:bool, num:int = 5) -> dict:
+def results_to_json(page:Page, lens:bool, size:list[str], num:int = 5) -> dict:
     """
     Referred from `search_with_query()`, `search_with_url()` and `search_with_file()`
     
     Takes lens in case of the last 2 functions above, redirecting to the image carousel
+
+    Optional list of the order of which the sizes are prioritised (default is 'Large', 'Medium' then 'Any size')
 
     Returns
     ---------
@@ -126,9 +142,11 @@ def results_to_json(page:Page, lens:bool, num:int = 5) -> dict:
     {
         "title" : str,
         "data" : [
-            "link" : str,
-            "name" : str,
-            "dimensions" : [int, int]
+            {
+                "link" : str,
+                "name" : str,
+                "dimensions" : [int, int]
+            }, ...
         ]
     }
     ```
@@ -173,7 +191,6 @@ def results_to_json(page:Page, lens:bool, num:int = 5) -> dict:
         except:
             pass
     page.get_by_role("button",name="Size").first.click()
-    size:list = ["Large","Medium","Any size"]
     size_idx = 0
     page.get_by_role("link", name=size[size_idx]).filter(has_text=size[size_idx]).click()
     loc = page.get_by_text("Image results").locator("../div")
@@ -234,7 +251,7 @@ def results_to_json(page:Page, lens:bool, num:int = 5) -> dict:
         else:
             idx += 1
     
-    print("Preparing results...")
+    print("Formatting results...")
     return {
         "title":page.locator("input[role='combobox'][aria-label='Search']").get_attribute("value"),
         "data":links
