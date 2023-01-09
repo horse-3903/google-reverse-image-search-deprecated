@@ -1,6 +1,7 @@
 from playwright.sync_api import Page, Playwright, Browser, BrowserContext, sync_playwright, TimeoutError as PlaywrightTimeout
 from os.path import isfile
 import validators
+import requests
 
 def __startup(debug: bool = False) -> tuple[Page, Browser, BrowserContext]:
     """
@@ -53,27 +54,33 @@ def search_with_url(url: str, num: int = 5, size: list[str] = ["Large","Medium",
     ------
     `ValidationFailure`
         if the provided `url` is invalid
+    `ConnectionError`
+        if connection to `url` could not be established
     """
     page: Page
     browser: Browser
     context: BrowserContext
     page, browser, context = __startup(debug=debug)
     valid = validators.url(url)
-    if valid:
-        page.get_by_role("button", name="Search by image").click()
-        url_input = page.get_by_placeholder("Paste image link")
-        url_input.hover()
-        url_input.type(url)
-        page.get_by_role("button", name="Search", exact=True).first.click()
-        page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
+    try:
+        if valid:            
+            ping = requests.head(url)
+            page.get_by_role("button", name="Search by image").click()
+            url_input = page.get_by_placeholder("Paste image link")
+            url_input.hover()
+            url_input.type(url)
+            page.get_by_role("button", name="Search", exact=True).first.click()
+            page.goto(page.get_by_role("link", name="Find image source").get_attribute("href"))
 
-        results = __results_to_json(page=page, lens=True, num=num, size=size)
+            results = __results_to_json(page=page, lens=True, num=num, size=size)
+            browser.close()
+            context.close()
+            return results
+    except:
         browser.close()
         context.close()
-        return results
-    else:
-        browser.close()
-        context.close()
+        if type(valid) == bool:
+            raise ConnectionError("Could not connect to", url)
         raise valid
 
 def search_with_file(file_path: str, num: int = 5, size: list[str] = ["Large","Medium","Any size"], debug: bool = False) -> dict:
@@ -218,7 +225,8 @@ def __results_to_json(page:Page, lens:bool, size:list[str], num:int = 5) -> dict
             pass
     page.get_by_role("button",name="Size").first.click()
     size_idx = 0
-    page.get_by_role("link", name=size[size_idx]).filter(has_text=size[size_idx]).click()
+    page.get_by_text(size[size_idx]).first.click()
+    page.get_by_text(size[size_idx]).first.click()
     loc = page.get_by_text("Image results").locator("../div")
     suc = 0
     idx = 0
@@ -252,7 +260,7 @@ def __results_to_json(page:Page, lens:bool, size:list[str], num:int = 5) -> dict
                     }
             else:
                 page.get_by_role("listitem").first.click()
-                page.get_by_role("link", name=size[size_idx]).filter(has_text=size[size_idx]).click()
+                page.get_by_text(size[size_idx]).first.click()
                 loc = page.get_by_text("Image results").locator("../div")
                 size_idx += 1
                 idx = 0
