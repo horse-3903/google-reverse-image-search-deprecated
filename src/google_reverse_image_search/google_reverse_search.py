@@ -80,7 +80,7 @@ def search_with_url(url: str, num: int = 5, size: list[str] = ["Large","Medium",
         browser.close()
         context.close()
         if type(valid) == bool:
-            raise ConnectionError("Could not connect to", url)
+            raise ConnectionError(f"Could not connect to {url}")
         raise valid
 
 def search_with_file(file_path: str, num: int = 5, size: list[str] = ["Large","Medium","Any size"], debug: bool = False) -> dict:
