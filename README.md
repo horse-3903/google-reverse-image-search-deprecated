@@ -1,30 +1,35 @@
-# Google-Reverse-Image-Search
+# Google Reverse Image Search
 
 ## Installation
-Download the `main` folder (or just `main/google_reverse_search.py`) into your local directory
+Download the `src` folder or download from `pip` with the terminal command (below)
 
-Run the command in your local terminal (ideally also through a virtual environment - follow this guide https://docs.python.org/3/library/venv.html#creating-virtual-environments)
-```ps1
-# assuming your virtual env has been set up
->> pip install -r requirements.txt
->> playwright install chromium
+Run the command in your local terminal with a Virtual Environment (https://docs.python.org/3/library/venv.html#creating-virtual-environments)
+```sh
+> python -m venv your_venv_name
+
+# Downloading from GitHub 
+> pip install -r ./path/to/requirements.txt
+
+# Downloading from pip
+> pip install google-reverse-image-search
+
+> playwright install chromium
 ```
-
-#### Note : Only works on Chrome (for now)
+Note : Only works for Chrome _(for now but likely won't change)_
 
 ## Usage
 
 Import all functions from the file with 
 ```py
-from google_reverse_search import *
+from google_reverse_image_search import google_reverse_search
 ```
 
 Then start anywhere with the three basic functions
 
 ```py
-print(search_with_query(query="your query"))
-print(search_with_url(url="https://link/to/photo"),num=5)
-print(search_with_file(file_path="C:/path/to/file",num=20))
+print(google_reverse_search.search_with_query(query="your query"))
+print(google_reverse_search.search_with_url(url="https://link/to/photo"),num=5)
+print(google_reverse_search.search_with_file(file_path="C:/path/to/file",num=20))
 ```
 
 ## Examples
@@ -32,12 +37,12 @@ All three functions will return the images in a similar manner
 
 ### Code
 ```py
-res:dict = search_with_query(query="boats",num=3)
+res:dict = google_reverse_search.search_with_query(query="boats",num=3)
 print(res)
 ```
 
 ### Results
-_Formatted for better viewing_
+>Formatted for easier reading
 ```ps1
 Connected...
 Navigating...
@@ -53,5 +58,5 @@ Formatting results...
 ```
 
 ## Bugs and Issues
-#### Please raise any issues you have on the `Issues` forum, and I'll take a look (hopefully)
+ Please raise any issues you have on the [Issues](https://github.com/horse-3903/google-reverse-image-search/issues) forum, and I'll take a look and fix it 🙏
 

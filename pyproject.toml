@@ -1,6 +1,6 @@
 [project]
 name = "google-reverse-image-search"
-version = "0.3.6"
+version = "0.4.2"
 authors = [
   { name="horse-3903", email="horse3903410@gmail.com" },
 ]
@@ -11,6 +11,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    "playwright <= 1.29.1",
+    "validators <= 0.20.0",
 ]
 
 [project.urls]
