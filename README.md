@@ -1,5 +1,8 @@
 # Google Reverse Image Search
 
+## Warning
+This repository is DEPRECATED, and will not function properly due to Google Updates
+
 ## Installation
 Download the `src` folder or download from `pip` with the terminal command (below)
 
